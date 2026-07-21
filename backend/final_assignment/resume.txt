@@ -1,0 +1,7 @@
+Jane Doe
+Software Engineer
+Email: jane.doe@example.com
+Phone: +1 555-0199
+Skills: C#, ASP.NET Core, React, SQL Server, TypeScript
+Experience: 3 years building web applications.
+Education: BS in Computer Science.

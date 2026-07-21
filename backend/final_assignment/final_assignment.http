@@ -1,0 +1,121 @@
+@HostAddress = http://localhost:5163
+@authToken = YOUR_JWT_TOKEN_HERE
+
+### ================= AUTH ENDPOINTS =================
+
+### 1. Register User (Candidate)
+POST {{HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Test Candidate",
+  "email": "candidate@test.com",
+  "password": "Password123!",
+  "role": "Candidate"
+}
+
+### 2. Login User (Get JWT Token)
+POST {{HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "candidate@test.com",
+  "password": "Password123!"
+}
+
+### ================= JOB ENDPOINTS =================
+
+### 3. Get All Active Jobs
+GET {{HostAddress}}/api/jobs
+Authorization: Bearer {{authToken}}
+Accept: application/json
+
+### 4. Create Job (Recruiter / Admin)
+POST {{HostAddress}}/api/jobs
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "title": "Full-Stack Software Engineer",
+  "description": "Looking for C# ASP.NET Core and React developer.",
+  "requiredSkills": "C#, ASP.NET Core, React, SQL Server",
+  "jobRole": "Software Engineer",
+  "employmentType": "FullTime",
+  "location": "Remote",
+  "organizationId": 1,
+  "departmentId": 1,
+  "closingDate": "2026-12-31T23:59:59"
+}
+
+### ================= APPLICATION ENDPOINTS =================
+
+### 5. Apply for a Job (Candidate)
+POST {{HostAddress}}/api/applications/apply
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "jobId": 1,
+  "candidateCVId": "1"
+}
+
+### 6. Get Staff Applications (Recruiter / Hiring Manager)
+GET {{HostAddress}}/api/applications
+Authorization: Bearer {{authToken}}
+Accept: application/json
+
+### 7. Shortlist Application (Recruiter)
+PUT {{HostAddress}}/api/applications/1/shortlist
+Authorization: Bearer {{authToken}}
+
+### 8. Reject Application (Recruiter)
+PUT {{HostAddress}}/api/applications/1/reject
+Authorization: Bearer {{authToken}}
+
+### 9. Make Final Hiring Decision (Hiring Manager)
+PUT {{HostAddress}}/api/applications/1/decision?decision=Selected
+Authorization: Bearer {{authToken}}
+
+### ================= INTERVIEW ENDPOINTS =================
+
+### 10. Schedule Interview (Recruiter)
+POST {{HostAddress}}/api/interviews
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "applicationId": 1,
+  "interviewerId": 2,
+  "interviewDate": "2026-08-01T10:00:00",
+  "interviewMode": "Online",
+  "meetingLink": "https://meet.google.com/abc-defg-hij"
+}
+
+### 11. Get My Interview Calendar
+GET {{HostAddress}}/api/interviews/my-calendar
+Authorization: Bearer {{authToken}}
+
+### 12. Enhance Feedback with AI (Hiring Manager / Recruiter)
+POST {{HostAddress}}/api/interviews/enhance-feedback
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "rawNotes": "good technical interview strong c# and react knowledge",
+  "candidateName": "Test Candidate",
+  "jobTitle": "Full-Stack Software Engineer"
+}
+
+### ================= ADMIN ENDPOINTS =================
+
+### 13. Get Admin Dashboard Metrics
+GET {{HostAddress}}/api/admin/dashboard
+Authorization: Bearer {{authToken}}
+
+### 14. Get All Users (Admin)
+GET {{HostAddress}}/api/admin/users
+Authorization: Bearer {{authToken}}
+
+### 15. Get System Audit Logs (Admin)
+GET {{HostAddress}}/api/admin/auditlogs
+Authorization: Bearer {{authToken}}
