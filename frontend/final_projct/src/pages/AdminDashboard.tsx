@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  BarChart4, Building2, UserPlus, FileText, Plus, 
-  RefreshCw, Layers, Edit, Trash2, Power, Users as UsersIcon, CheckCircle, XCircle 
+import {
+  BarChart4, Building2, UserPlus, FileText, Plus,
+  RefreshCw, Layers, Edit, Trash2, Power, Users as UsersIcon, CheckCircle, XCircle,
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight
 } from 'lucide-react';
+
 
 interface AdminDashboardProps {
   token: string;
@@ -59,13 +61,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ token, showToast
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'orgs' | 'depts' | 'users' | 'userList' | 'audit'>('dashboard');
   const [loading, setLoading] = useState(false);
-  
+
   // Data States
   const [stats, setStats] = useState<Stats | null>(null);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [usersList, setUsersList] = useState<UserAccount[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
 
   // Create Form States
   const [orgName, setOrgName] = useState('');
@@ -95,11 +100,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ token, showToast
     fetchDashboardData();
   }, [token]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
+
+
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
       const headers = { 'Authorization': `Bearer ${token}` };
-      
+
       // Fetch Stats
       const statsRes = await fetch('http://localhost:5163/api/admin/dashboard', { headers });
       if (statsRes.ok) {
@@ -393,7 +403,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ token, showToast
     }
   };
 
+  // Pagination Calculations
+  const totalPages = Math.ceil(auditLogs.length / pageSize);
+  const activePage = Math.min(currentPage, totalPages || 1);
+  const indexOfLastLog = activePage * pageSize;
+  const indexOfFirstLog = indexOfLastLog - pageSize;
+  const currentLogs = auditLogs.slice(indexOfFirstLog, indexOfLastLog);
+
   return (
+
     <div className="container" style={{ flex: 1 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <div>
@@ -526,14 +544,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ token, showToast
                     </td>
                     <td>
                       <div style={{ display: 'flex', gap: '0.4rem' }}>
-                        <button 
-                          className="btn btn-secondary" 
+                        <button
+                          className="btn btn-secondary"
                           style={{ padding: '0.25rem 0.6rem', fontSize: '0.78rem' }}
                           onClick={() => setEditingUser(user)}
                         >
                           <Edit className="w-3.5 h-3.5" /> Edit
                         </button>
-                        <button 
+                        <button
                           className={`btn ${user.isActive !== false ? 'btn-danger' : 'btn-secondary'}`}
                           style={{ padding: '0.25rem 0.6rem', fontSize: '0.78rem' }}
                           onClick={() => handleToggleUserStatus(user.id)}
@@ -749,7 +767,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ token, showToast
           <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <UserPlus className="w-5 h-5 text-primary" /> Create Staff Account
           </h3>
-          
+
           <form onSubmit={handleCreateStaff}>
             <div className="form-group">
               <label className="form-label">Full Name *</label>
@@ -854,39 +872,120 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ token, showToast
           {auditLogs.length === 0 ? (
             <p>No audit logs recorded yet.</p>
           ) : (
-            <div className="table-container">
-              <table className="custom-table" style={{ fontSize: '0.85rem' }}>
-                <thead>
-                  <tr>
-                    <th>Date & Time</th>
-                    <th>User</th>
-                    <th>Email</th>
-                    <th>Action Performed</th>
-                    <th>Entity Affected</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {auditLogs.map((log) => (
-                    <tr key={log.id}>
-                      <td style={{ color: 'var(--text-muted)' }}>
-                        {new Date(log.createdAt).toLocaleString()}
-                      </td>
-                      <td style={{ fontWeight: 500 }}>{log.userFullName}</td>
-                      <td>{log.userEmail}</td>
-                      <td style={{ fontFamily: 'monospace', color: '#4338ca' }}>{log.action}</td>
-                      <td>
-                        <span className="badge badge-applied">
-                          {log.entityName}
-                        </span>
-                      </td>
+            <>
+              <div className="table-container">
+                <table className="custom-table" style={{ fontSize: '0.85rem' }}>
+                  <thead>
+                    <tr>
+                      <th>Date & Time</th>
+                      <th>User</th>
+                      <th>Email</th>
+                      <th>Action Performed</th>
+                      <th>Entity Affected</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {currentLogs.map((log) => (
+                      <tr key={log.id}>
+                        <td style={{ color: 'var(--text-muted)' }}>
+                          {new Date(log.createdAt).toLocaleString()}
+                        </td>
+                        <td style={{ fontWeight: 500 }}>{log.userFullName}</td>
+                        <td>{log.userEmail}</td>
+                        <td style={{ fontFamily: 'monospace', color: '#4338ca' }}>{log.action}</td>
+                        <td>
+                          <span className="badge badge-applied">
+                            {log.entityName}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination Controls */}
+              <div className="pagination-bar">
+                <div className="pagination-info">
+                  Showing <strong>{auditLogs.length === 0 ? 0 : indexOfFirstLog + 1}</strong> to <strong>{Math.min(indexOfLastLog, auditLogs.length)}</strong> of <strong>{auditLogs.length}</strong> entries
+                </div>
+                <div className="pagination-controls">
+                  <button
+                    className="btn-pagination"
+                    onClick={() => setCurrentPage(1)}
+                    disabled={activePage === 1}
+                    title="First Page"
+                  >
+                    <ChevronsLeft className="w-4 h-4" />
+                  </button>
+                  <button
+                    className="btn-pagination"
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={activePage === 1}
+                    title="Previous Page"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter(page => page === 1 || page === totalPages || Math.abs(page - activePage) <= 1)
+                    .map((page, index, array) => {
+                      const showEllipsis = index > 0 && page - array[index - 1] > 1;
+                      return (
+                        <React.Fragment key={page}>
+                          {showEllipsis && <span className="pagination-ellipsis">...</span>}
+                          <button
+                            className={`btn-pagination ${activePage === page ? 'active' : ''}`}
+                            onClick={() => setCurrentPage(page)}
+                          >
+                            {page}
+                          </button>
+                        </React.Fragment>
+                      );
+                    })
+                  }
+
+                  <button
+                    className="btn-pagination"
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={activePage === totalPages || totalPages === 0}
+                    title="Next Page"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                  <button
+                    className="btn-pagination"
+                    onClick={() => setCurrentPage(totalPages)}
+                    disabled={activePage === totalPages || totalPages === 0}
+                    title="Last Page"
+                  >
+                    <ChevronsRight className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="pagination-size">
+                  Show
+                  <select
+                    value={pageSize}
+                    onChange={(e) => {
+                      setPageSize(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="pagination-select"
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </select>
+                  entries
+                </div>
+              </div>
+            </>
           )}
         </div>
       )}
+
 
       {/* Edit User Modal */}
       {editingUser && (
